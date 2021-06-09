@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import os
 import numpy
 import pickle
+from datetime import datetime
 
 load_dotenv()
 
@@ -20,6 +21,8 @@ video = cv2.VideoCapture(0)
 
 while True:
     ret, frame = video.read()
+    frame = cv2.putText(frame, datetime.now().strftime(
+        "%Y-%m-%d %H:%M:%S"), (0, frame.shape[0]), cv2.FONT_HERSHEY_PLAIN, 1.5, (255, 255, 255), 2)
     data = pickle.dumps(numpy.array(frame))
     sock.send(str(len(data)).ljust(SOCKET_HEADER_SIZE).encode())
     sock.send(data)
