@@ -31,38 +31,45 @@ class ReceiverServer (threading.Thread):
 
     def __init__(self):
         threading.Thread.__init__(self)
+        self.isRun = True
+
+    def stop(self):
+        self.isRun = False
+        self.sock.close()
 
     def getFrame(self):
         return self.frame
 
     def run(self):
+        print("Start Receiver Thread")
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.bind(("", SERVER_PORT))
         self.sock.listen(True)
 
-        print(f"Server Start On Port: {SERVER_PORT}")
+        print(f"Receiver Server Start On Port: {SERVER_PORT}")
 
-        while True:
+        while self.isRun:
             self.frame = None
 
-            conn, addr = self.sock.accept()
-
-            print(f"Receive Connection From: {addr[0]}:{addr[1]}")
+            try:
+                conn, addr = self.sock.accept()
+                print(f"Receive Connection From: {addr[0]}:{addr[1]}")
+            except:
+                print("Terminate Socket Accepting")
 
             try:
-                while True:
+                while self.isRun:
                     length = int(ReceiverServer.recvall(
                         conn, SOCKET_HEADER_SIZE).decode())
                     data = ReceiverServer.recvall(conn, length)
                     self.frame = pickle.loads(data)
             except:
                 print(f"Connection Lost: {addr[0]}:{addr[1]}")
-            cv2.destroyAllWindows()
         self.sock.close()
 
     def __del__(self):
-        cv2.destroyAllWindows()
         self.sock.close()
+        print("Receiver Thread Stopped")
 
 
 receiverServer = ReceiverServer()
@@ -100,4 +107,6 @@ def video_stream():
     return Response(gen_frames(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 
+print(f"Streaming Video On Port: {VIDEO_STREAM_PORT}")
 app.run(port=VIDEO_STREAM_PORT)
+receiverServer.stop()
