@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 import numpy
 import pickle
-from flask import Flask, render_template, Response
+from flask import Flask, Response
 from flask.helpers import url_for
 import threading
 
@@ -12,6 +12,8 @@ load_dotenv()
 
 SERVER_PORT = int(os.getenv("SERVER_PORT"))
 SOCKET_HEADER_SIZE = int(os.getenv("SOCKET_HEADER_SIZE"))
+
+VIDEO_STREAM_PORT = int(os.getenv("VIDEO_STREAM_PORT"))
 
 
 class ReceiverServer (threading.Thread):
@@ -72,10 +74,10 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     return f'''
-    <body>
-        <div class="container">
+    <body style="margin:0">
+        <div class="container" style="height:100vh;display:flex;flex-direction:column">
             <h1>Camera</h1>
-            <img src="{url_for('video_stream')}">
+            <img style="object-fit:contain;object-position:left" src="{url_for('video_stream')}">
         </div>
     </body>
     '''
@@ -85,7 +87,7 @@ def gen_frames():
     while True:
         frame = receiverServer.getFrame()
         if (type(frame) == type(None)):
-            frame = numpy.zeros([100, 100, 3], dtype=numpy.uint8)
+            frame = numpy.zeros([1, 1, 3], dtype=numpy.uint8)
             frame.fill(0)
         ret, frame = cv2.imencode('.jpg', frame)
         frame = frame.tobytes()
@@ -98,4 +100,4 @@ def video_stream():
     return Response(gen_frames(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 
-app.run()
+app.run(port=VIDEO_STREAM_PORT)
