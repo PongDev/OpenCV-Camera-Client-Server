@@ -13,6 +13,7 @@ SERVER_PORT = int(os.getenv("SERVER_PORT"))
 SOCKET_HEADER_SIZE = int(os.getenv("SOCKET_HEADER_SIZE"))
 
 print("Start Client")
+print(f"Destination Server {SERVER_IP}:{SERVER_PORT}")
 
 while True:
     sock = socket.socket()
