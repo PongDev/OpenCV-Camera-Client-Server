@@ -8,19 +8,21 @@ RUN apt update && apt upgrade -y && apt install -y \
     python3-opencv \
     ninja-build \
     cmake \
-    libssl-dev
+    libssl-dev \
+    screen
 
 COPY ./.env /home/VideoServer/.env
+COPY ./CameraServer.py /home/VideoServer/CameraServer.py
 COPY ./requirements.txt /home/VideoServer/requirements.txt
-COPY ./server.py /home/VideoServer/server.py
-COPY ./server.wsgi /home/VideoServer/server.wsgi
-COPY ./server.conf /etc/apache2/sites-available/server.conf
+COPY ./VideoStream.conf /etc/apache2/sites-available/VideoStream.conf
+COPY ./VideoStream.py /home/VideoServer/VideoStream.py
+COPY ./VideoStream.wsgi /home/VideoServer/VideoStream.wsgi
 
 RUN pip3 install --upgrade pip
 RUN pip3 install -r /home/VideoServer/requirements.txt
 
 RUN a2dissite 000-default
-RUN a2ensite server
+RUN a2ensite VideoStream
 
 RUN ln -sf /proc/self/fd/1 /var/log/apache2/access.log && \
     ln -sf /proc/self/fd/1 /var/log/apache2/error.log
@@ -28,4 +30,4 @@ RUN ln -sf /proc/self/fd/1 /var/log/apache2/access.log && \
 EXPOSE ${SERVER_PORT}
 EXPOSE 80
 
-CMD /usr/sbin/apache2ctl -D FOREGROUND
+CMD screen -dmS CameraServer /usr/bin/python3 /home/VideoServer/CameraServer.py && /usr/sbin/apache2ctl -D FOREGROUND

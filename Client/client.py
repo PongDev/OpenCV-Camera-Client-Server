@@ -9,12 +9,13 @@ from datetime import datetime
 load_dotenv(os.path.abspath(os.path.join(
     os.path.realpath(__file__), "../.env")))
 
+CLIENT_NAME = os.getenv("CLIENT_NAME")
 SERVER_IP = os.getenv("SERVER_IP")
 SERVER_PORT = int(os.getenv("SERVER_PORT"))
 SOCKET_HEADER_SIZE = int(os.getenv("SOCKET_HEADER_SIZE"))
 CAMERA_ROTATE = int(os.getenv("CAMERA_ROTATE"))
 
-print("Start Client")
+print(f"Start Client Name: {CLIENT_NAME}")
 print(f"Destination Server {SERVER_IP}:{SERVER_PORT}")
 
 while True:
@@ -24,6 +25,10 @@ while True:
         sock.connect((SERVER_IP, SERVER_PORT))
 
         print(f"Connect Server: {SERVER_IP}:{SERVER_PORT}")
+
+        data = pickle.dumps(f"0{CLIENT_NAME}")
+        sock.send(str(len(data)).ljust(SOCKET_HEADER_SIZE).encode())
+        sock.send(data)
 
         while True:
             ret, frame = video.read()
@@ -37,5 +42,4 @@ while True:
     except:
         print("Connection Lost")
     video.release()
-    cv2.destroyAllWindows()
     sock.close()
