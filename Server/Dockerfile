@@ -5,7 +5,10 @@ RUN apt update && apt upgrade -y && apt install -y \
     libapache2-mod-wsgi-py3 \
     python3 \
     python3-pip \
-    python3-opencv
+    python3-opencv \
+    ninja-build \
+    cmake \
+    libssl-dev
 
 COPY ./.env /home/VideoServer/.env
 COPY ./requirements.txt /home/VideoServer/requirements.txt
