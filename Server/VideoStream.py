@@ -72,7 +72,7 @@ def init_app():
         <body style="margin:0">
             <div class="container" style="height:100vh;display:flex;flex-direction:column">
                 <h1>Camera</h1>
-                <img style="object-fit:contain;object-position:left" src="{url_for('video_stream')}">
+                <img style="height:calc(100vh - 79.88px);object-fit:contain;object-position:left top" src="{url_for('video_stream')}">
             </div>
         </body>
         '''
