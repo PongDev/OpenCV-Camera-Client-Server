@@ -53,18 +53,21 @@ def init_app():
                 data = pickle.dumps(f"{CAMERA_NAME}")
                 sock.send(str(len(data)).ljust(SOCKET_HEADER_SIZE).encode())
                 sock.send(data)
-
-                length = int(recvall(
-                    sock, SOCKET_HEADER_SIZE).decode())
-                frame = pickle.loads(recvall(sock, length))
+                while True:
+                    length = int(recvall(
+                        sock, SOCKET_HEADER_SIZE).decode())
+                    frame = pickle.loads(recvall(sock, length))
+                    lastFrame = frame
+                    ret, frame = cv2.imencode('.jpg', frame)
+                    frame = frame.tobytes()
+                    yield (b'--frame\r\n'
+                           b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
             except:
                 frame = lastFrame
-
-            lastFrame = frame
-            ret, frame = cv2.imencode('.jpg', frame)
-            frame = frame.tobytes()
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+                ret, frame = cv2.imencode('.jpg', frame)
+                frame = frame.tobytes()
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
     @app.route('/')
     def index():

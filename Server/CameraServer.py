@@ -90,15 +90,19 @@ class Client(threading.Thread):
                 self.sock, SOCKET_HEADER_SIZE).decode())
             data = recvall(self.sock, length)
             requestClientFrameName = pickle.loads(data)
-            if (requestClientFrameName in Client.clientNameData and "frame" in Client.clientNameData[requestClientFrameName]):
-                data = Client.clientNameData[requestClientFrameName]["frame"]
-            else:
-                data = numpy.zeros([1, 1, 3], dtype=numpy.uint8)
-                data.fill(0)
-            data = pickle.dumps(data)
-            self.sock.send(str(len(data)).ljust(
-                SOCKET_HEADER_SIZE).encode())
-            self.sock.send(data)
+            try:
+                while isRun:
+                    if (requestClientFrameName in Client.clientNameData and "frame" in Client.clientNameData[requestClientFrameName]):
+                        data = Client.clientNameData[requestClientFrameName]["frame"]
+                    else:
+                        data = numpy.zeros([1, 1, 3], dtype=numpy.uint8)
+                        data.fill(0)
+                    data = pickle.dumps(data)
+                    self.sock.send(str(len(data)).ljust(
+                        SOCKET_HEADER_SIZE).encode())
+                    self.sock.send(data)
+            except:
+                output(f"Connection Lost: {self.addr[0]}:{self.addr[1]}")
 
         if (self.clientName in Client.clientNameData):
             Client.clientNameData.pop(self.clientName)
